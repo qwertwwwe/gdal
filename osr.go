@@ -3,6 +3,7 @@ package gdal
 /*
 #include "go_gdal.h"
 #include "gdal_version.h"
+#include "ogr_api.h"
 */
 import "C"
 import (
@@ -17,6 +18,14 @@ import (
 type SpatialReference struct {
 	cval C.OGRSpatialReferenceH
 }
+
+type OSRAxisMappingStrategy uint32
+
+const (
+	OAMS_TRADITIONAL_GIS_ORDER = OSRAxisMappingStrategy(C.OAMS_TRADITIONAL_GIS_ORDER)
+	OAMS_AUTHORITY_COMPLIANT   = OSRAxisMappingStrategy(C.OAMS_AUTHORITY_COMPLIANT)
+	OAMS_CUSTOM                = OSRAxisMappingStrategy(C.OAMS_CUSTOM)
+)
 
 // Create a new SpatialReference
 func CreateSpatialReference(wkt string) SpatialReference {
@@ -59,6 +68,10 @@ func (sr SpatialReference) FromEPSG(code int) error {
 // Initialize SRS based on EPSG code, using EPSG lat/long ordering
 func (sr SpatialReference) FromEPSGA(code int) error {
 	return C.OSRImportFromEPSGA(sr.cval, C.int(code)).Err()
+}
+
+func (sr SpatialReference) SetAxisMappingStrategy(osrams OSRAxisMappingStrategy) {
+	C.OSRSetAxisMappingStrategy(sr.cval, C.OSRAxisMappingStrategy(osrams))
 }
 
 // Destroy the spatial reference
